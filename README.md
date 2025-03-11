@@ -32,7 +32,7 @@ To get a local copy up and running, follow these simple steps.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/abalachandra/VersionVault.git
+   git clone https://github.com/mr-ap-code/cmdb_poc.git
 
     Install Composer packages<pre>composer install </pre>
     Run the application<pre>php artisan serve </pre>
@@ -56,7 +56,4 @@ Fork the Project
 ## Licence  
 Distributed under the MIT License. See LICENSE for more information.
 
-## Contact
-Arun Prasath Balachandran - abalachandra @adobe.com
-Project Link: https://github.com/abalachandra/VersionVault
 

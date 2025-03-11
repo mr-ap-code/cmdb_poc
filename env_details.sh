@@ -79,7 +79,6 @@ else
 fi
 
 remoteCommands=$(ssh -n "$ssh_url" '
-    patch_id="12485"
     front_url=$(bin/magento config:show web/secure/base_url | tr -d "\n")
     front_url=${front_url%/}  # Remove trailing slash
     admin_uri=$(bin/magento info:adminuri | cut -d'/' -f2 | tr -d "\n")
@@ -90,32 +89,26 @@ remoteCommands=$(ssh -n "$ssh_url" '
     php_version=$(php --version | grep -oP "PHP \K[0-9]+\.[0-9]+\.[0-9]+")
     mariadb_version=$(mysql -V | awk "{print \$5}" | cut -d"-" -f1 | cut -d"." -f1-3)
     redis_version=$(redis-server --version | awk "{print \$3}" | cut -d"=" -f2)
-    search_name=$(curl -s -XGET "http://localhost:9200" | grep '"cluster_name"' | awk -F\" "{print \$4}")
-    search_version=$(curl -s -XGET "http://localhost:9200" | grep '"number"' | awk -F\" "{print \$4}")
+    search_name=$(curl -s -XGET "http://localhost:9200" | grep '"cluster_name"' | awk -F'"' '{print $4}')
+    search_version=$(curl -s -XGET "http://localhost:9200" | grep '"number"' | awk -F'"' '{print $4}')
+    rabbitmq_version=$(dpkg -s rabbitmq-server | grep 'Version' | awk -F'[ .-]' '{print $2"."$3}')
     keys=$(grep -oP "'key'\s*=>\s*'\K[^']+" app/etc/env.php)
-    patch_output=$(./vendor/bin/magento-patches -n status | grep "$patch_id\|Status" 2>&1)
-    if [[ $patch_output == *"12485"* ]]; then
-        patch_status="Applied"
-    else
-        patch_status="Not Applied"
-    fi
     duplicate_keys=$(echo "$keys" | sort | uniq -d)
     if [ -n "$duplicate_keys" ]; then
         crypt_key="Duplicate keys"
     else
         crypt_key="No duplicate"
     fi
-
     if [[ $twofa_output == *"path doesn"* ]]; then
-        twofa_enabled='not enabled'
+        twofa_enabled="not enabled"
         twofa_provider=""
     else
-        twofa_enabled='enabled'
+        twofa_enabled="enabled"
         twofa_provider=$twofa_output
     fi
     utc_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    echo "{}" | jq --arg cv "$commerce_version" --arg et "$ece_tools_version" --arg fv "$front_url" --arg av "$front_url/$admin_uri" --arg ut "$utc_time" --arg loc "$locale" --arg twofa "$twofa_enabled" --arg provider "$twofa_provider" --arg mdbv "$mariadb_version" --arg rv "$redis_version" --arg sn "$search_name" --arg sv "$search_version" --arg ck "$crypt_key" --arg pt "$patch_status"\
-    ". + {\"locale\": \$loc, \"commerce_version\": \$cv, \"ece_tools\": \$et, \"front_url\": \$fv, \"admin_url\": \$av, \"two_factor_auth\": \$twofa, \"two_factor_provider\": \$provider, \"mariadb_version\": \$mdbv, \"redis_version\": \$rv, \"search_provider\": \$sn, \"search_version\": \$sv, \"crypt_key\": \$ck, \"CVE-2024-34102_patch_status\": \$pt, \"utc_time\": \$ut}"
+    echo "{}" | jq --arg cv "$commerce_version" --arg et "$ece_tools_version" --arg fv "$front_url" --arg av "$front_url/$admin_uri" --arg ut "$utc_time" --arg loc "$locale" --arg twofa "$twofa_enabled" --arg provider "$twofa_provider" --arg mdbv "$mariadb_version" --arg rv "$redis_version" --arg sn "$search_name" --arg sv "$search_version" --arg ck "$crypt_key" --arg rmqv "$rabbitmq_version" \
+        ". + {\"locale\": \$loc, \"commerce_version\": \$cv, \"ece_tools\": \$et, \"front_url\": \$fv, \"admin_url\": \$av, \"two_factor_auth\": \$twofa, \"two_factor_provider\": \$provider, \"mariadb_version\": \$mdbv, \"utc_time\": \$ut, \"redis_version\": \$rv, \"search_name\": \$sn, \"search_version\": \$sv, \"crypt_key\": \$ck, \"rabbitmq_version\": \$rmqv}"
 ')
 
 # Check if the SSH command was successful
@@ -123,6 +116,6 @@ if [ $? -eq 0 ]; then
     combined_json=$(echo "$json_output" | jq --argjson rc "$remoteCommands" '. + $rc')
     echo "$combined_json"
 else
-    echo "Error executing SSH command:"sugge
+    echo "Error executing SSH command:"
     echo "$remoteCommands"
 fi
