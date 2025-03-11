@@ -1,6 +1,6 @@
-# VersionVault
+# CMDB
 
-VersionVault is a centralized Configuration Management Database (CMDB) application specifically designed for Adobe Commerce. It provides a comprehensive overview of the various versions of services and applications used by all customers.
+A Centralized Configuration Management Database (CMDB) application specifically designed for full stack applications. It provides a comprehensive overview of the various versions of services and applications used by all users and accounts.
 
 ## Built With
 
