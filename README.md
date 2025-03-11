@@ -16,7 +16,7 @@ A Centralized Configuration Management Database (CMDB) application specifically 
 ## Features
 
 - Centralized tool for tracking service and application versions
-- Designed specifically for Adobe Commerce
+- Designed specifically for Full Stack Applications
 - Easy to use and intuitive interface
 
 ## Getting Started
